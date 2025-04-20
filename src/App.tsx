@@ -21,11 +21,16 @@ function App() {
     const weatherClass = classifyWeather(weather);
     const tempClass = classifyTemp(temp);
     const key = `${weatherClass}_${tempClass}`;
+    
+    // BASE_URLの確認
+    console.log("BASE_URL:", import.meta.env.BASE_URL);
   
     // 音源がすでに再生中か確認し、再生する都市が重複しないようにする
     if (!playingCities.some(item => item.city === city && item.sound === key)) {
       // base URL を考慮してパスを設定
       const audioUrl = `${import.meta.env.BASE_URL}sounds/${key}.wav`;
+      console.log("Audio URL:", audioUrl);  // ここで生成されるURLも確認
+
       const newAudio = new Audio(audioUrl);
       newAudio.play();
       newAudio.onended = () => {
