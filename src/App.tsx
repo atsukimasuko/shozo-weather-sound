@@ -24,13 +24,19 @@ function App() {
   
     // 音源がすでに再生中か確認し、再生する都市が重複しないようにする
     if (!playingCities.some(item => item.city === city && item.sound === key)) {
-      const newAudio = new Audio(`/sounds/${key}.wav`);
+      // base URL を考慮してパスを設定
+      const audioUrl = `${import.meta.env.BASE_URL}sounds/${key}.wav`;
+      const newAudio = new Audio(audioUrl);
       newAudio.play();
       newAudio.onended = () => {
         setPlayingCities((prevCities) => prevCities.filter(item => item.city !== city)); // 音が終わったらリストから削除
       };
   
-      setPlayingCities((prevCities) => [...prevCities, { city, sound: key, audio: newAudio }]); // 再生中の都市と音源名をリストに追加
+      // 再生中の都市と音源名をリストに追加
+      setPlayingCities((prevCities) => [
+        ...prevCities, 
+        { city, sound: key, audio: newAudio }
+      ]);
     }
   };
   
