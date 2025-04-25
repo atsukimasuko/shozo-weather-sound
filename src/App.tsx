@@ -14,7 +14,7 @@ function App() {
   const [dbgTemp, setDbgTemp] = useState<"hot"|"moderate"|"cold">("moderate");
 
   const handleCheckWeather = async () => {
-    const { weather, temp } = await getWeatherData(city);
+    const { weather, temp } = await getWeatherData(pref);
     setWeather(weather);
     setTemp(temp);
   };
@@ -24,7 +24,7 @@ function App() {
   
     const weatherClass = classifyWeather(weather);
     const tempClass = classifyTemp(temp);
-    const key = `${weatherClass}_${tempClass}`;
+    const key = `${pref}_${weatherClass}_${tempClass}`;
     
     // BASE_URLの確認
     console.log("BASE_URL:", import.meta.env.BASE_URL);
@@ -44,7 +44,7 @@ function App() {
       // 再生中の都市と音源名をリストに追加
       setPlayingCities((prevCities) => [
         ...prevCities, 
-        { city, sound: key, audio: newAudio }
+        { city: pref, sound: key, audio: newAudio }
       ]);
     }
   };
@@ -84,14 +84,16 @@ function App() {
 
       <p>例: Tokyo, New York, Cairo, Sydney, Rio de Janeiro</p>
 
-      <input
+      <div>{/* <input
         type="text"
         value={city}
         onChange={(e) => setCity(e.target.value)}
         placeholder="都市名を入力"
       />
+      */}
       <button onClick={handleCheckWeather}>天気を確認</button>
-
+      </div>
+  
       {weather && temp !== null && (
         <div style={{ marginTop: "1rem" }}>
           <p>
