@@ -5,7 +5,7 @@ import { getWeatherData, classifyWeather, classifyTemp } from "./weatherUtils";
 import { PREFS } from "./prefs";
 
 function App() {
-  const [city, setCity] = useState("Tokyo");
+  //const [city] = useState("Tokyo");
   const [pref, setPref] = useState("Tokyo"); 
   const [weather, setWeather] = useState("");
   const [temp, setTemp] = useState<number | null>(null);
@@ -30,7 +30,7 @@ function App() {
     console.log("BASE_URL:", import.meta.env.BASE_URL);
   
     // 音源がすでに再生中か確認し、再生する都市が重複しないようにする
-    if (!playingCities.some(item => item.city === city && item.sound === key)) {
+    if (!playingCities.some(item => item.city === pref && item.sound === key)) {
       // base URL を考慮してパスを設定
       const audioUrl = `${import.meta.env.BASE_URL}sounds/${key}.wav`;
       console.log("Audio URL:", audioUrl);  // ここで生成されるURLも確認
@@ -38,7 +38,7 @@ function App() {
       const newAudio = new Audio(audioUrl);
       newAudio.play();
       newAudio.onended = () => {
-        setPlayingCities((prevCities) => prevCities.filter(item => item.city !== city)); // 音が終わったらリストから削除
+        setPlayingCities((prevCities) => prevCities.filter(item => item.city !== pref)); // 音が終わったらリストから削除
       };
   
       // 再生中の都市と音源名をリストに追加
