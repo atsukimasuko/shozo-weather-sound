@@ -9,7 +9,12 @@ function App() {
   const [pref, setPref] = useState("Tokyo"); 
   const [weather, setWeather] = useState("");
   const [temp, setTemp] = useState<number | null>(null);
-  const [playingCities, setPlayingCities] = useState<{ city: string, sound: string, audio: HTMLAudioElement }[]>([]); // 音源ごとのオーディオと都市情報を保持
+  const [playingCities, setPlayingCities] = useState<{ city: string, sound: string, 
+  
+  audio: HTMLAudioElement }[]>([]); // 音源ごとのオーディオと都市情報を保持
+  
+  // ✅ デバッグ用 state
+  const [debugCity, setDebugCity] = useState("Tokyo");
   const [dbgWeather, setDbgWeather] = useState<"Clear"|"Rain"|"Clouds">("Clear");
   const [dbgTemp, setDbgTemp] = useState<"hot"|"moderate"|"cold">("moderate");
 
@@ -49,20 +54,44 @@ function App() {
     }
   };
 
-    const handleDebugPlay = () => {
-      const key = `${pref}_${dbgWeather}_${dbgTemp}`;   // Pref はドロップダウンの値
-      const url = `${import.meta.env.BASE_URL}sounds/${key}.wav`;
-      const audio = new Audio(url);
-      audio.play().catch(err => console.error(err));
-  };
-
+  const handleDebugPlay = () => {
+    const key = `${debugCity}_${dbgWeather}_${dbgTemp}`;
+    const url = `${import.meta.env.BASE_URL}sounds/${key}.wav`;
   
-  const stopAudio = (cityToStop: string) => {
-    const targetCity = playingCities.find(item => item.city === cityToStop);
-    if (targetCity) {
-      targetCity.audio.pause();
-      targetCity.audio.currentTime = 0;
-      setPlayingCities((prevCities) => prevCities.filter(item => item.city !== cityToStop)); // 停止した都市をリストから削除
+    // すでに再生中なら何もしない
+    if (playingCities.some(item => item.city === key)) return;
+  
+    const audio = new Audio(url);
+  
+    // 再生開始
+    audio.play()
+      .then(() => {
+        // 再生中リストに追加
+        setPlayingCities(prev => [
+          ...prev,
+          { city: key, sound: key, audio }
+        ]);
+      })
+      .catch(err => console.error("Audio playback failed", err));
+  
+    // 再生終了時にリストから削除
+    audio.onended = () => {
+      setPlayingCities(prev => prev.filter(item => item.city !== key));
+    };
+  };
+  
+  const stopAudio = (cityToStop: string, soundToStop: string) => {
+    const target = playingCities.find(
+      (item) => item.city === cityToStop && item.sound === soundToStop
+    );
+    if (target) {
+      target.audio.pause();
+      target.audio.currentTime = 0;
+      setPlayingCities((prevCities) =>
+        prevCities.filter(
+          (item) => !(item.city === cityToStop && item.sound === soundToStop)
+        )
+      );
     }
   };
 
@@ -114,8 +143,13 @@ function App() {
           <ul>
             {playingCities.map((item, index) => (
               <li key={index}>
-                {item.city} - {item.sound}
-                <button onClick={() => stopAudio(item.city)}>停止</button> {/* 特定の音源を停止 */}
+                {item.sound}
+                <button
+                  style={{ marginLeft: "0.5rem" }}
+                  onClick={() => stopAudio(item.city, item.sound)}
+                >
+                  停止
+                </button>
               </li>
             ))}
           </ul>
@@ -129,30 +163,52 @@ function App() {
     <h2>デバッグ用</h2>
 
     {/* 都道府県は既存 select を再利用してOK */}
+    <div style={{ marginBottom: "1rem" }}>
+      <label>
+        都市:
+        <select
+          value={debugCity}
+          onChange={(e) => setDebugCity(e.target.value)}
+          style={{ marginLeft: "0.5rem" }}
+        >
+          <option value="Tokyo">Tokyo</option>
+          <option value="Osaka">Osaka</option>
+          <option value="Kyoto">Kyoto</option>
+          <option value="Hokkaido">Hokkaido</option>
+          <option value="Yamanashi">Yamanashi</option>
+        </select>
+      </label>
+    </div>
 
     {/* 天気ボタン */}
     <div>
-      {["Clear","Rain","Clouds"].map(w => (
+      {["Clear", "Rain", "Clouds"].map(w => (
         <button
           key={w}
           onClick={() => setDbgWeather(w as any)}
-          style={{fontWeight: dbgWeather===w ? "bold":"normal"}}
-        >{w}</button>
+          style={{ fontWeight: dbgWeather === w ? "bold" : "normal", marginRight: "0.5rem" }}
+        >
+          {w}
+        </button>
       ))}
     </div>
 
     {/* 気温ボタン */}
-    <div>
-      {["hot","moderate","cold"].map(t => (
+    <div style={{ marginTop: "0.5rem" }}>
+      {["hot", "moderate", "cold"].map(t => (
         <button
           key={t}
           onClick={() => setDbgTemp(t as any)}
-          style={{fontWeight: dbgTemp===t ? "bold":"normal"}}
-        >{t}</button>
+          style={{ fontWeight: dbgTemp === t ? "bold" : "normal", marginRight: "0.5rem" }}
+        >
+          {t}
+        </button>
       ))}
     </div>
 
-    <button onClick={handleDebugPlay}>デバッグ再生</button>
+    <div style={{ marginTop: "1rem" }}>
+      <button onClick={handleDebugPlay}>デバッグ再生</button>
+    </div>
 
       <div style={{ marginTop: "2rem" }}>
         <h3>🗾 日本の都市の例（20件）</h3>
